@@ -236,9 +236,11 @@ public class StyleFormatter {
      */
     public static List<Text> wrapText(TextRenderer textRenderer, int scaledWidth, Text text) {
         ArrayList<Text> lines = new ArrayList<>();
+
         for (OrderedText breakRenderedChatMessageLine : ChatMessages.breakRenderedChatMessageLines(text, scaledWidth, textRenderer)) {
             lines.add(new TextBuilder().append(breakRenderedChatMessageLine).build());
         }
+
         return lines;
     }
 }

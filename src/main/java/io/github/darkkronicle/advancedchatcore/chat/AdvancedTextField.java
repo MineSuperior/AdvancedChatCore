@@ -15,6 +15,7 @@ import io.github.darkkronicle.advancedchatcore.util.StringMatch;
 import io.github.darkkronicle.advancedchatcore.util.StyleFormatter;
 import io.github.darkkronicle.advancedchatcore.util.TextBuilder;
 import io.github.darkkronicle.advancedchatcore.util.TextUtil;
+import lombok.Getter;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -46,14 +47,19 @@ public class AdvancedTextField extends TextFieldWidget {
     private final List<String> history = new ArrayList<>();
 
     private int focusedTicks = 0;
+
+    @Getter
     private List<Text> renderLines = new ArrayList<>();
+
     private TextRenderer textRenderer;
     private String suggestion = null;
     private int maxLength = 32;
     private int selectionEnd;
     private int selectionStart;
+
     // TODO Split?
-    private BiFunction<String, Integer, OrderedText> renderTextProvider = (string, firstCharacterIndex) -> OrderedText.styledForwardsVisitedString(string, Style.EMPTY);
+    private BiFunction<String, Integer, OrderedText> renderTextProvider =
+        (string, firstCharacterIndex) -> OrderedText.styledForwardsVisitedString(string, Style.EMPTY);
 
     private int historyIndex = -1;
 
@@ -62,16 +68,20 @@ public class AdvancedTextField extends TextFieldWidget {
     }
 
     public AdvancedTextField(
-            TextRenderer textRenderer,
-            int x,
-            int y,
-            int width,
-            int height,
-            @Nullable TextFieldWidget copyFrom,
-            Text text) {
+        TextRenderer textRenderer,
+        int x,
+        int y,
+        int width,
+        int height,
+        @Nullable TextFieldWidget copyFrom,
+        Text text
+    ) {
         super(textRenderer, x, y, width, height, copyFrom, text);
+
         history.add("");
+
         this.textRenderer = textRenderer;
+
         updateRender();
     }
 
@@ -249,21 +259,13 @@ public class AdvancedTextField extends TextFieldWidget {
             x1 = x + this.width;
         }
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferBuilder = tessellator.getBuffer();
-        RenderSystem.setShader(GameRenderer::getPositionProgram);
-        RenderSystem.setShaderColor(0.0f, 0.0f, 1.0f, 1.0f);
-//        RenderSystem.disableTexture();
-        RenderSystem.enableColorLogicOp();
-        RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE);
-        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION);
-        bufferBuilder.vertex(x1, y2, 0.0).next();
-        bufferBuilder.vertex(x2, y2, 0.0).next();
-        bufferBuilder.vertex(x2, y1, 0.0).next();
-        bufferBuilder.vertex(x1, y1, 0.0).next();
-        tessellator.draw();
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        RenderSystem.disableColorLogicOp();
-//        RenderSystem.enableTexture();
+        BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        bufferBuilder.vertex((float) x1, (float) y2, 0.0f).color(255, 85, 0, 150);
+        bufferBuilder.vertex((float) x2, (float) y2, 0.0f).color(255, 85, 0, 150);
+        bufferBuilder.vertex((float) x2, (float) y1, 0.0f).color(255, 85, 0, 150);
+        bufferBuilder.vertex((float) x1, (float) y1, 0.0f).color(255, 85, 0, 150);
+        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
     }
 
     @Override
@@ -306,7 +308,12 @@ public class AdvancedTextField extends TextFieldWidget {
 
     private void updateRender() {
         OrderedText formatted = renderTextProvider.apply(getText(), 0);
-        renderLines = StyleFormatter.wrapText(textRenderer, getWidth(), new TextBuilder().append(formatted).build());
+
+        renderLines = StyleFormatter.wrapText(
+            textRenderer,
+            getWidth(),
+            new TextBuilder().append(formatted).build()
+        );
     }
 
     private void updateHistory() {

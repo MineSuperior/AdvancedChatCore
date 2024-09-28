@@ -1,13 +1,13 @@
 plugins {
-	id 'fabric-loom' version '1.0-SNAPSHOT'
+	id 'fabric-loom' version '1.7-SNAPSHOT'
 	id 'maven-publish'
-	id "io.freefair.lombok" version "6.0.0-m2"
+	id "io.freefair.lombok" version "8.10"
 }
 
-apply from: 'https://raw.githubusercontent.com/DarkKronicle/GradleScripts/main/gradle/publish.gradle'
+// apply from: 'https://raw.githubusercontent.com/DarkKronicle/GradleScripts/main/gradle/publish.gradle'
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+sourceCompatibility = JavaVersion.VERSION_21
+targetCompatibility = JavaVersion.VERSION_21
 
 archivesBaseName = project.archives_base_name
 version = "${project.minecraft_version}-${project.mod_version}"
@@ -31,7 +31,7 @@ dependencies {
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-	modImplementation "fi.dy.masa.malilib:malilib-fabric-1.20.2:${project.malilib_version}"
+	modImplementation "fi.dy.masa.malilib:malilib-fabric-1.21.1:${project.malilib_version}"
 	modCompileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
 
 	implementation "com.github.DarkKronicle.Konstruct:addons:${project.konstruct_version}"
@@ -52,8 +52,8 @@ dependencies {
 	implementation "io.github.maowimpl:owo:${project.owo_version}"
 	include "io.github.maowimpl:owo:${project.owo_version}"
 
-	implementation 'org.apache.commons:commons-csv:1.8'
-	include 'org.apache.commons:commons-csv:1.8'
+	implementation 'org.apache.commons:commons-csv:1.11.0'
+	include 'org.apache.commons:commons-csv:1.11.0'
 
 }
 
@@ -67,27 +67,22 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
 	it.options.encoding = "UTF-8"
-	it.options.release = 17
+	it.options.release = 21
 }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-	classifier = "sources"
+tasks.register("sourcesJar", Jar) {
+	dependsOn classes
+	archiveClassifier.set("sources")
 	from sourceSets.main.allSource
 }
-
 jar {
 	from "LICENSE.txt"
 }
 
-tasks.register('downloadExtra') {
-	def f = new File('./src/main/resources/swear_words.csv')
-	if (!f.exists()) {
-		new URL('https://raw.githubusercontent.com/surge-ai/profanity/main/profanity_en.csv').withInputStream{ i -> f.withOutputStream{ it << i }}
-	}
-}
+
 
 assemble {
-	dependsOn 'downloadExtra'
+	// dependsOn 'downloadExtra'
 }
 
 // configure the maven publication
@@ -107,6 +102,6 @@ publishing {
 	// select the repositories you want to publish to
 	repositories {
 		// uncomment to publish to the local maven
-		// mavenLocal()
+		mavenLocal()
 	}
 }

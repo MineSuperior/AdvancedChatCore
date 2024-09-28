@@ -25,18 +25,18 @@ public abstract class MixinClientPlayerEntity extends Entity {
     }
 
     @Inject(
-            method="updateNausea",
+            method="tickNausea",
             at = @At(value="INVOKE", target="Lnet/minecraft/client/MinecraftClient;setScreen(Lnet/minecraft/client/gui/screen/Screen;)V"),
             cancellable = true
     )
-    public void updateNauseaHook(CallbackInfo ci) {
+    public void tickNauseaHook(CallbackInfo ci) {
         if (client.currentScreen instanceof AdvancedChatScreen) {
             ci.cancel();
             nauseaIntensity += 0.0125f;
             if (this.nauseaIntensity >= 1.0f) {
                 this.nauseaIntensity = 1.0f;
             }
-            inNetherPortal = false;
+            this.portalManager.setInPortal(false);
         }
     }
 

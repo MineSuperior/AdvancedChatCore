@@ -18,6 +18,7 @@ import io.github.darkkronicle.advancedchatcore.interfaces.AdvancedChatScreenSect
 import io.github.darkkronicle.advancedchatcore.util.Color;
 import io.github.darkkronicle.advancedchatcore.util.RowList;
 import lombok.Getter;
+import net.fabricmc.loader.impl.util.log.Log;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.ChatHud;
@@ -117,37 +118,55 @@ public class AdvancedChatScreen extends GuiBase {
 
     public void initGui() {
         super.initGui();
+
         this.rightSideButtons.clear();
         this.leftSideButtons.clear();
+
         resetCurrentMessage();
+
         this.chatField =
-                new AdvancedTextField(
-                        this.textRenderer,
-                        4,
-                        this.height - 12,
-                        this.width - 10,
-                        12,
-                        Text.translatable("chat.editBox")) {
-                    protected MutableText getNarrationMessage() {
-                        return null;
-                    }
-                };
+            new AdvancedTextField(
+                this.textRenderer,
+                4,
+                this.height - 12,
+                this.width - 10,
+                12,
+                Text.translatable("chat.editBox")
+            ) {
+                protected MutableText getNarrationMessage() {
+                    return null;
+                }
+            };
+
         if (ConfigStorage.ChatScreen.MORE_TEXT.config.getBooleanValue()) {
             this.chatField.setMaxLength(64000);
         } else {
             this.chatField.setMaxLength(256);
         }
+
         this.chatField.setDrawsBackground(false);
+
         if (!this.originalChatText.equals("")) {
             this.chatField.setText(this.originalChatText);
         } else if (ConfigStorage.ChatScreen.PERSISTENT_TEXT.config.getBooleanValue()
                 && !last.equals("")) {
             this.chatField.setText(last);
         }
+
         this.chatField.setChangedListener(this::onChatFieldUpdate);
 
         // Add settings button
-        rightSideButtons.add("settings", new IconButton(0, 0, 14, 64, new Identifier(AdvancedChatCore.MOD_ID, "textures/gui/settings.png"), (button) -> GuiBase.openGui(GuiConfigHandler.getInstance().getDefaultScreen())));
+        rightSideButtons.add(
+            "settings",
+            new IconButton(
+                0,
+                0,
+                14,
+                64,
+                Identifier.of(AdvancedChatCore.MOD_ID, "textures/gui/settings.png"),
+                (button) -> GuiBase.openGui(GuiConfigHandler.getInstance().getDefaultScreen())
+            )
+        );
 
         this.addSelectableChild(this.chatField);
 
@@ -157,22 +176,40 @@ public class AdvancedChatScreen extends GuiBase {
             section.initGui();
         }
 
+        this.renderButtons();
+
+        if (startHistory >= 0) {
+            setChatFromHistory(-startHistory - 1);
+        }
+    }
+
+    private void renderButtons() {
+        super.clearButtons();
+
         int originalX = client.getWindow().getScaledWidth() - 1;
-        int y = client.getWindow().getScaledHeight() - 30;
+
+        // int y = client.getWindow().getScaledHeight() - 30;
+        int y = client.getWindow().getScaledHeight() - 30 - (chatField.getHeight() * (chatField.getRenderLines().size() - 1) + 1);
+
         for (int i = 0; i < rightSideButtons.rowSize(); i++) {
             List<ButtonBase> buttonList = rightSideButtons.get(i);
             int maxHeight = 0;
             int x = originalX;
             for (ButtonBase button : buttonList) {
                 maxHeight = Math.max(maxHeight, button.getHeight());
-                x -= button.getWidth() + 1;
+                x -= button.getWidth() + 2;
                 button.setPosition(x, y);
-                addButton(button, null);
+                super.addButton(button, null);
+                // AdvancedChatCore.LOGGER.info("Adding right-side button at x: %s; y: %s; button: %s".formatted(x, y, button));
             }
-            y -= maxHeight + 1;
+            y -= maxHeight + 2;
         }
+
         originalX = 1;
-        y = client.getWindow().getScaledHeight() - 30;
+
+        // y = client.getWindow().getScaledHeight() - 30;
+        y = client.getWindow().getScaledHeight() - 30 - (chatField.getHeight() * (chatField.getRenderLines().size() - 1) + 1);
+
         for (int i = 0; i < leftSideButtons.rowSize(); i++) {
             List<ButtonBase> buttonList = leftSideButtons.get(i);
             int maxHeight = 0;
@@ -180,15 +217,12 @@ public class AdvancedChatScreen extends GuiBase {
             for (ButtonBase button : buttonList) {
                 maxHeight = Math.max(maxHeight, button.getHeight());
                 button.setPosition(x, y);
-                addButton(button, null);
-                x += button.getWidth() + 1;
+                super.addButton(button, null);
+                // AdvancedChatCore.LOGGER.info("Adding left-side button at x: %s; y: %s; button: %s".formatted(x, y, button));
+                x += button.getWidth() + 2;
             }
-            y -= maxHeight + 1;
+            y -= maxHeight + 2;
         }
-        if (startHistory >= 0) {
-            setChatFromHistory(-startHistory - 1);
-        }
-
     }
 
     public void resize(MinecraftClient client, int width, int height) {
@@ -216,6 +250,8 @@ public class AdvancedChatScreen extends GuiBase {
         for (AdvancedChatScreenSection section : sections) {
             section.onChatFieldUpdate(chatText, string);
         }
+
+        this.renderButtons();
     }
 
     @Override
