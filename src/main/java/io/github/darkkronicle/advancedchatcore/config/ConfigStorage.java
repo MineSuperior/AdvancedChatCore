@@ -375,11 +375,13 @@ public class ConfigStorage implements IConfigHandler {
                         element = parser.parse(reader);
                     } catch (Exception e) {
                         reader.close();
-                        MaLiLib.logger.error(
-                                "Failed to parse the JSON file '{}'. Attempting different charset."
-                                        + " ",
-                                fileName,
-                                e);
+
+                        MaLiLib.LOGGER.error(
+                            "Failed to parse the JSON file '{}'. Attempting different charset." + " ",
+                            fileName,
+                            e
+                        );
+
                         continue;
                     }
                     reader.close();
@@ -387,7 +389,7 @@ public class ConfigStorage implements IConfigHandler {
                     return element;
                 }
             } catch (Exception e) {
-                MaLiLib.logger.error("Failed to parse the JSON file '{}'", fileName, e);
+                MaLiLib.LOGGER.error("Failed to parse the JSON file '{}'", fileName, e);
             }
         }
 
@@ -405,15 +407,14 @@ public class ConfigStorage implements IConfigHandler {
 
             return true;
         } catch (IOException e) {
-            MaLiLib.logger.warn(
-                    "Failed to write JSON data to file '{}'", file.getAbsolutePath(), e);
+            MaLiLib.LOGGER.warn("Failed to write JSON data to file '{}'", file.getAbsolutePath(), e);
         } finally {
             try {
                 if (writer != null) {
                     writer.close();
                 }
             } catch (Exception e) {
-                MaLiLib.logger.warn("Failed to close JSON file", e);
+                MaLiLib.LOGGER.warn("Failed to close JSON file", e);
             }
         }
 

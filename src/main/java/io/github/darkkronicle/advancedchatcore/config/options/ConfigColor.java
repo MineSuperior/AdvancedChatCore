@@ -95,17 +95,19 @@ public class ConfigColor extends fi.dy.masa.malilib.config.options.ConfigColor {
                 this.setIntegerValue(this.value);
                 this.setColor();
             } else {
-                MaLiLib.logger.warn(
-                        "Failed to set config value for '{}' from the JSON element '{}'",
-                        this.getName(),
-                        element);
-            }
-        } catch (Exception e) {
-            MaLiLib.logger.warn(
+                MaLiLib.LOGGER.warn(
                     "Failed to set config value for '{}' from the JSON element '{}'",
                     this.getName(),
-                    element,
-                    e);
+                    element
+                );
+            }
+        } catch (Exception e) {
+            MaLiLib.LOGGER.warn(
+                "Failed to set config value for '{}' from the JSON element '{}'",
+                this.getName(),
+                element,
+                e
+            );
         }
     }
 

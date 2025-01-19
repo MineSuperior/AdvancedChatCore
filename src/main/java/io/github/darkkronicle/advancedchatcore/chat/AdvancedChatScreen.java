@@ -146,10 +146,12 @@ public class AdvancedChatScreen extends GuiBase {
 
         this.chatField.setDrawsBackground(false);
 
-        if (!this.originalChatText.equals("")) {
+        if (!this.originalChatText.isEmpty()) {
             this.chatField.setText(this.originalChatText);
-        } else if (ConfigStorage.ChatScreen.PERSISTENT_TEXT.config.getBooleanValue()
-                && !last.equals("")) {
+        } else if (
+            ConfigStorage.ChatScreen.PERSISTENT_TEXT.config.getBooleanValue() &&
+            !last.isEmpty()
+        ) {
             this.chatField.setText(last);
         }
 
@@ -423,6 +425,7 @@ public class AdvancedChatScreen extends GuiBase {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float partialTicks) {
+        this.client.inGameHud.getChatHud().render(context, this.client.inGameHud.getTicks(), mouseX, mouseY, true);
         ChatHud hud = client.inGameHud.getChatHud();
         this.setFocused(this.chatField);
         this.chatField.setFocused(true);
@@ -441,6 +444,11 @@ public class AdvancedChatScreen extends GuiBase {
     @Override
     protected void drawScreenBackground(int mouseX, int mouseY) {
 
+    }
+
+    @Override
+    protected void drawScreenBackground(DrawContext drawContext, int mouseX, int mouseY) {
+        // Don't.
     }
 
     private void setText(String text) {

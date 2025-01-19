@@ -17,6 +17,7 @@ import io.github.darkkronicle.advancedchatcore.util.TextBuilder;
 import io.github.darkkronicle.advancedchatcore.util.TextUtil;
 import lombok.Getter;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
@@ -260,7 +261,7 @@ public class AdvancedTextField extends TextFieldWidget {
         }
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
         bufferBuilder.vertex((float) x1, (float) y2, 0.0f).color(255, 85, 0, 150);
         bufferBuilder.vertex((float) x2, (float) y2, 0.0f).color(255, 85, 0, 150);
         bufferBuilder.vertex((float) x2, (float) y1, 0.0f).color(255, 85, 0, 150);
@@ -335,7 +336,7 @@ public class AdvancedTextField extends TextFieldWidget {
         this.lastSaved = text;
         this.history.add(text);
         while (this.history.size() > MAX_HISTORY) {
-            this.history.remove(0);
+            this.history.removeFirst();
         }
     }
 
@@ -350,7 +351,7 @@ public class AdvancedTextField extends TextFieldWidget {
             return;
         }
         while (history.size() > index) {
-            history.remove(history.size() - 1);
+            history.removeLast();
         }
     }
 
@@ -373,5 +374,16 @@ public class AdvancedTextField extends TextFieldWidget {
     @Override
     public void appendClickableNarrations(NarrationMessageBuilder builder) {
         // Crashes here because Text is null
+    }
+
+    @Override
+    public void eraseWords(int wordOffset) {
+        if (!this.getText().isEmpty()) {
+            if (this.selectionEnd != this.selectionStart) {
+                this.setText("");
+            } else {
+                this.eraseCharacters(this.getWordSkipPosition(wordOffset) - this.selectionStart);
+            }
+        }
     }
 }
